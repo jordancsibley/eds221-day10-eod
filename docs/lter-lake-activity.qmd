@@ -1,0 +1,92 @@
+---
+title: "Day 10 Afternoon Practice"
+format: html
+---
+
+```{r}
+library(tidyverse)
+library(here)
+library(kableExtra)
+```
+
+
+```{r}
+# load in data 
+ice_mads <- read_csv(here("data", "ntl33_v7.csv"), na = c("-999", "NA"))
+meterological <- read_csv(here("data", "ntl20_v6.csv"))
+
+# data looks good. in tidy form already 
+```
+
+
+- Create visualization that compares ice duration across different lakes in Madison Lake Area. 
+- Include both the actual ice duration values and some representation of summary statistics for each lake. 
+From metadata 
+- ME = Lake Mendota 
+- MO = Lake Monona 
+- WI = Lake Wingra
+
+
+```{r}
+# data viz comparing ice_duration and lakeid
+# remove nas from ice_duration 
+
+ice_duration_rmna <- filter(ice_mads, !is.na(ice_duration)) %>%
+  mutate(lake_name = )
+  
+  
+ggplot(data = ice_mads, aes(x = lakeid, y = ice_duration)) +
+  geom_boxplot() +
+  labs(y = "Ice duration (days)",
+       x = "Lake ID",
+       title = "Lakes of Madison Area Ice Duration")
+
+
+ice_duration_rmna %>% 
+  group_by(lakeid) %>% 
+  summarise(mean = mean(ice_duration),
+            sd = sd(ice_duration),
+            sample = n()) %>% 
+  kable(col.names = c("Lake ID", "Mean", "Standard Deviation", "Sample Size")) %>% 
+  kable_classic() %>% 
+  add_header_above(c("ME = Lake Mendota\nMO = Lake Monona\nWI = Lake Wingra\n" = 1, " " = 1, " " = 2)) 
+```
+
+- Find the mean ice cover duration in Madison Lake Area by year
+```{r}
+ice_duration_rmna %>% 
+  group_by(year4) %>%
+  summarise(mean_ice = mean(ice_duration)) %>% 
+  kable(col.names = c("Year", "Mean ice duration (days)")) %>% 
+  kable_paper() %>% 
+  scroll_box(height = "150px", width = "500px")
+```
+
+
+- Create an exploratory visualization of mean ice cover duration by year for the Madison Lake Area.
+```{r}
+mean_ice_cover_year <- ice_duration_rmna %>% 
+  group_by(year4) %>%
+  summarise(mean_ice = mean(ice_duration))
+
+ggplot(data = mean_ice_cover_year, aes(x = year4, y = mean_ice)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(x = "Year",
+       y = "Mean ice cover duration (days)")
+```
+The overall trend of mean ice cover duration is that there is a stead decrease in mean duration from the years 1850 to the year 2019. I included a trend line in my plot to show this pattern. 
+
+
+
+- Find the mean air temperature (using the daily average air temperature - adjusted) in Madison Lake Area by year using only observations from winter months (December, January, February)
+```{r}
+#mean ave_air_temp_adjusted grouped by year only including the months dec(12), jan(1), feb(2) 
+
+mean_air_temp <- meterological %>% 
+  filter(month == 12 | month == 1 | month == 2) %>% 
+  group_by(year4, month) %>% 
+  summarise(mean_air = mean(ave_air_temp_adjusted))
+```
+
+
